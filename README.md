@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Callaba Engine Manager (Test App)
+=======
+# Callaba Engine Manager (Test app)
+>>>>>>> 5a913141a2e08e41bae9b3420d031c014f63792c
 <h2>How to setup</h2>
 
 <h3>Credentials</h3>
