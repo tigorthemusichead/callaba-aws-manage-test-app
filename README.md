@@ -1,4 +1,4 @@
-# Callaba Engine Test Manager
+# Callaba Engine Manager (Test app)
 <h2>How to setup</h2>
 
 <h3>Credentials</h3>
