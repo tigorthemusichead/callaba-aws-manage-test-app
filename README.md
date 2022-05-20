@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 # Callaba Engine Manager (Test App)
-=======
-# Callaba Engine Manager (Test app)
->>>>>>> 5a913141a2e08e41bae9b3420d031c014f63792c
-<h2>How to setup</h2>
+
 
 <h3>Credentials</h3>
 Get the credentials in your AWS account.<br>
@@ -67,4 +63,4 @@ In the second terminal window open <code>client</code> folder and run
 The web page will be automatically opened in your browser
 
 <h2>Tutorial</h2>
-You can find a more detailed tutorial <a href='https://callabacloud.medium.com/creating-a-test-app-to-manage-callaba-engine-on-aws-using-a-restful-api-90947a3feb08'>here</a>.
+You can find a more detailed tutorial <a target="_blank" href='https://callabacloud.medium.com/creating-a-test-app-to-manage-callaba-engine-on-aws-using-a-restful-api-90947a3feb08'>here</a>.
