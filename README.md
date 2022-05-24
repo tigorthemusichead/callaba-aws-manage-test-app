@@ -278,7 +278,7 @@ Click “Stop” to stop your instance.
           })
       }
    </pre>
-<h4>Remove a Web Player</h4>
+<h4>Removing a Web Player</h4>
    <pre>
    removePlayer(){
       fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/remove',
@@ -295,7 +295,7 @@ Click “Stop” to stop your instance.
           .then(() => this.setState({playerState: "no player"}))
       }
    </pre>
-<h4>Create Restream</h4>
+<h4>Creating Restream</h4>
    <pre>
       createRestream(){
       fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/create',
@@ -328,7 +328,7 @@ Click “Stop” to stop your instance.
           .then(data => this.setState({restreamId: data._id}))
       }
    </pre>
-<h4>Remove restream</h4>
+<h4>Removing restream</h4>
    <pre>
      removeRestream(){
       fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/remove',
