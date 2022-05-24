@@ -87,7 +87,7 @@ In the second terminal window open <code>client</code> folder and run
 
 The web page will be automatically opened in your browser
 
-<h2>How to use</h2>
+<h2>How to use and how it works</h2>
 
 <h3>Manage AWS Instance</h3>
 
@@ -107,8 +107,60 @@ This means that you need to <b>Stop</b> or <b>Terminate</b> you instance upon co
 
 <h3>Creating SRT Server and sending a stream to it</h3>
 Now we are going to create SRT Server to send our stream to.
-1) Click <b>“Auth”</b>
-2) Click <b>“Create”</b>
+1) Click <b>“Auth”</b><br>
+   So this function will be called:
+   <pre>authenticate(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/auth/login',
+          {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(
+                  {
+                      email: "admin",
+                      password: this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].InstanceId
+                  })
+          })
+          .then(response => response.json())
+          .then(data => {
+              this.setState({callabaToken: data.token});
+              console.log(data);
+          })
+   }
+   </pre>
+   <pre>this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress</pre> is the public ip address of the created instance.<br>
+   The function requests <b>Callaba authentication token</b> and saves it to state to sign requests with it.
+   
+2) To create an SRT server click <b>“Create”</b><br>
+   Then this function will be called:
+   <pre>createStream(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/create',
+          {
+              method: 'POST',
+              headers: {
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(
+                  {
+                      server_name: "Test SRT server", // CHANGE WITH ANY SERVER NAME YOU WANT
+                      server_type: "SERVER_TYPE_SRT",
+                      server_port: 1935,
+                      server_latency: 200,
+                      server_maxbw: -1,
+                      server_timeout: 60,
+                      server_rcvbuf: 48234496,
+                      server_active: true
+                      })
+          })
+          .then(response => response.json())
+          .then(data => {
+              this.setState({serverId: data._id, serverState: "server running"});
+          })
+   }</pre>
+   In the request's body you can specify such settings as <code>server_name</code>, <code>server_port</code>
+   After executing the request the received server id will be saved to state.
    <img src="./readme_pics/11.png"/>
 3) Now that authorization is done and the server is created, we will send a stream to our server using <b>OBS Studio</b>
    <img src="./readme_pics/12.png"/>
@@ -124,8 +176,41 @@ Now we are going to create SRT Server to send our stream to.
 
 <h3>Creating a Web Player</h3>
 To see our stream coming to our server, we are now going to create a <b>Web Player.</b>
-1) Click <b>“Create”</b>
+1) Click <b>“Create”</b><br>
    <img src="./readme_pics/15.png"/>
+   The app will execute this function:
+   <pre>createPlayer(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/create',
+          {
+              method: 'POST',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(
+                  {
+                  vod_name: "Test SRT player",
+                  input: {
+                      input_type: "INPUT_TYPE_SRT_SOFTWARE",
+                      input_server_id: this.state.serverId,
+                      input_stream_id: "publisher/test-srt-server/srt-stream-01"
+                  },
+                  vod_port: 10001,
+                  initial_live_manifest_size: 4,
+                  live_sync_duration_count: 4,
+                  hls_fragment_size: 3,
+                  hls_fragment_length: 60,
+                  dash_fragment_size: 3,
+                  dash_fragment_length: 60,
+                  active: true
+              })
+          })
+          .then(response => response.json())
+          .then(data => this.setState({playerId: data._id, playerState: "running"}))
+   }</pre>
+   It uses the server id to specify the server it gets the stream from.<br>
+   After receiving data as a response the function saves the player's id to state. It is used by app to generate a link to the created player.
 2) Once your player is ready, click <b>Web Player</b> link to view your stream in the browser.
    <img src="./readme_pics/16.png"/>
 3) Wait for the player to load your stream, then click <b>play</b>.
@@ -136,6 +221,129 @@ It is important to Stop or Terminate your instances upon completion of your stre
 
 Click “Stop” to stop your instance.
 
-<img src="./readme_pics/18.png"/>
+<img src="./readme_pics/18.png"></img>
+
+<h3>Other functions</h3>
+<h4>Stopping an SRT stream</h4>
+   <pre>  
+   stopStream(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/stop',
+          {
+              method: 'POST',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({id: this.state.serverId})
+          })
+          .then(response => response.json())
+          .then(data => {
+              if(data.ok) this.setState({serverState: "server stopped"});
+          })
+      }</pre>
+<h4>Starting a stopped SRT stream</h4>
+   <pre>startStream(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/start',
+          {
+              method: 'POST',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({id: this.state.serverId})
+          })
+          .then(response => response.json())
+          .then(data => {
+              if(data.ok) this.setState({serverState: "server running"});
+          })
+      }</pre>
+<h4>Deleting an SRT stream</h4>
+   <pre>
+   removeStream(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/remove',
+          {
+              method: 'DELETE',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({id: this.state.serverId})
+          })
+          .then(response => response.json())
+          .then(data => {
+              if(data.ok) this.setState({serverState: "no server", serverId: "no server id"});
+          })
+      }
+   </pre>
+<h4>Remove a Web Player</h4>
+   <pre>
+   removePlayer(){
+      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/remove',
+          {
+              method: 'DELETE',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({id: this.state.playerId})
+          })
+          .then(response => response.json())
+          .then(() => this.setState({playerState: "no player"}))
+      }
+   </pre>
+<h4>Create Restream</h4>
+   <pre>
+      createRestream(){
+      fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/create',
+          {
+              method: 'POST',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type':'application/json'
+              },
+              body: JSON.stringify({
+                  restream_name: "Test restream",
+                  restream_type: "RESTREAM_TYPE_SRT_TO_RTMP",
+                  input: {
+                      input_type: "INPUT_TYPE_SRT_SOFTWARE",
+                      input_server_id: this.state.serverId,
+                      input_stream_id: "publisher/test-srt-server/srt-stream-01",
+                      module_name: "test youtube",
+                      module_type: "MODULE_RESTREAM"
+                  },
+                  output: {
+                      output_type: "OUTPUT_TYPE_OTHER_RTMP_URL",
+                      output_stream_url : "rtmp://x.rtmp.youtube.com/live2" ,
+                      output_stream_key: "f9da-dgj8-gq64-mjp2-7d0w"
+                  },
+                  active: true
+              })
+          })
+          .then(response => response.json())
+          .then(data => this.setState({restreamId: data._id}))
+      }
+   </pre>
+<h4>Remove restream</h4>
+   <pre>
+     removeRestream(){
+      fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/remove',
+          {
+              method: 'DELETE',
+              headers: {
+                  'accept': 'application/json',
+                  'x-access-token': this.state.callabaToken,
+                  'Content-Type':'application/json'
+              },
+              body: JSON.stringify({id: this.state.restreamId})
+          })
+          .then(response => response.json())
+          .then(() => this.setState({restreamId: "no restream"}))
+      }
+   </pre>
 <h2>Tutorial</h2>
 You can find a more detailed tutorial <a target="_blank" href='https://callabacloud.medium.com/creating-a-test-app-to-manage-callaba-engine-on-aws-using-a-restful-api-90947a3feb08'>here</a>.
