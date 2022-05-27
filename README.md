@@ -107,10 +107,10 @@ This means that you need to <b>Stop</b> or <b>Terminate</b> you instance upon co
 
 <h3>Creating SRT Server and sending a stream to it</h3>
 Now we are going to create SRT Server to send our stream to.
-1) Click <b>“Auth”</b><br>
-   So this function will be called:
+<img src="./readme_pics/11.png"/>
+- <h4>step 1: Authentication</h4>
    <pre>authenticate(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/auth/login',
+      fetch('http://' + this.state.ipAddress + '/api/auth/login',
           {
               method: 'POST',
               headers: {
@@ -129,13 +129,11 @@ Now we are going to create SRT Server to send our stream to.
           })
    }
    </pre>
-   <pre>this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress</pre> is the public ip address of the created instance.<br>
    The function requests <b>Callaba authentication token</b> and saves it to state to sign requests with it.
    
-2) To create an SRT server click <b>“Create”</b><br>
-   Then this function will be called:
+- <h4>step 2:  Creating an SRT server:</h4>
    <pre>createStream(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/create',
+      fetch('http://' + this.state.ipAddress + '/api/srt-servers/create',
           {
               method: 'POST',
               headers: {
@@ -161,26 +159,13 @@ Now we are going to create SRT Server to send our stream to.
    }</pre>
    In the request's body you can specify such settings as <code>server_name</code>, <code>server_port</code>
    After executing the request the received server id will be saved to state.
-   <img src="./readme_pics/11.png"/>
-3) Now that authorization is done and the server is created, we will send a stream to our server using <b>OBS Studio</b>
-   <img src="./readme_pics/12.png"/>
-4) Open <b>OBS Studio</b> and your media source (a videofile, a camera, a scene, etc)
-5) Click <b>“Settings”</b>
-   In the opened window open the <b>Stream</b> tab
-   Paste your <b>OBS URL</b> into the “Server” field
-   Click <b>“OK”</b>
-   <img src="./readme_pics/13.png"/>
-6) Click <b>“Start Streaming”</b>
-   Wait for the bitrate to appear in the bottom left corner.
-   <img src="./readme_pics/14.png"/>
+
 
 <h3>Creating a Web Player</h3>
 To see our stream coming to our server, we are now going to create a <b>Web Player.</b>
-1) Click <b>“Create”</b><br>
-   <img src="./readme_pics/15.png"/>
-   The app will execute this function:
+- <h4>step 3: Creating a Web Player</h4>
    <pre>createPlayer(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/create',
+      fetch('http://' + this.state.ipAddress + '/api/vod/create',
           {
               method: 'POST',
               headers: {
@@ -210,10 +195,12 @@ To see our stream coming to our server, we are now going to create a <b>Web Play
           .then(data => this.setState({playerId: data._id, playerState: "running"}))
    }</pre>
    It uses the server id to specify the server it gets the stream from.<br>
-   After receiving data as a response the function saves the player's id to state. It is used by app to generate a link to the created player.
-2) Once your player is ready, click <b>Web Player</b> link to view your stream in the browser.
+   After receiving data as a response the function saves the player's id to state. It is used by app to generate a link to the created player:
+   <pre>http:// + instanceIpAdress + /vod-player/ + playerId</pre>
+  <img src="./readme_pics/15.png"/>
+- Once your player is ready, click <b>Web Player</b> link to view your stream in the browser.
    <img src="./readme_pics/16.png"/>
-3) Wait for the player to load your stream, then click <b>play</b>.
+- Wait for the player to load your stream, then click <b>play</b>.
    <img src="./readme_pics/17.png"/>
 
 <h3>Finishing your work</h3>
@@ -227,7 +214,7 @@ Click “Stop” to stop your instance.
 <h4>Stopping an SRT stream</h4>
    <pre>  
    stopStream(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/stop',
+      fetch('http://' + this.state.ipAddress + '/api/srt-servers/stop',
           {
               method: 'POST',
               headers: {
@@ -244,7 +231,7 @@ Click “Stop” to stop your instance.
       }</pre>
 <h4>Starting a stopped SRT stream</h4>
    <pre>startStream(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/start',
+      fetch('http://' + this.state.ipAddress + '/api/srt-servers/start',
           {
               method: 'POST',
               headers: {
@@ -262,7 +249,7 @@ Click “Stop” to stop your instance.
 <h4>Deleting an SRT stream</h4>
    <pre>
    removeStream(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/servers/remove',
+      fetch('http://' + this.state.ipAddress + '/api/srt-servers/remove',
           {
               method: 'DELETE',
               headers: {
@@ -281,7 +268,7 @@ Click “Stop” to stop your instance.
 <h4>Removing a Web Player</h4>
    <pre>
    removePlayer(){
-      fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/remove',
+      fetch('http://' + this.state.ipAddress + '/api/vod/remove',
           {
               method: 'DELETE',
               headers: {
@@ -298,7 +285,7 @@ Click “Stop” to stop your instance.
 <h4>Creating Restream</h4>
    <pre>
       createRestream(){
-      fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/create',
+      fetch('http://'+ this.state.ipAddress +'/api/restream/create',
           {
               method: 'POST',
               headers: {
@@ -331,7 +318,7 @@ Click “Stop” to stop your instance.
 <h4>Removing restream</h4>
    <pre>
      removeRestream(){
-      fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/remove',
+      fetch('http://'+ this.state.ipAddress +'/api/restream/remove',
           {
               method: 'DELETE',
               headers: {
@@ -345,5 +332,6 @@ Click “Stop” to stop your instance.
           .then(() => this.setState({restreamId: "no restream"}))
       }
    </pre>
+
 <h2>Tutorial</h2>
 You can find a more detailed tutorial <a target="_blank" href='https://callabacloud.medium.com/creating-a-test-app-to-manage-callaba-engine-on-aws-using-a-restful-api-90947a3feb08'>here</a>.
