@@ -165,35 +165,41 @@ Now we are going to create SRT Server to send our stream to.
 To see our stream coming to our server, we are now going to create a <b>Web Player.</b>
 - <h4>step 3: Creating a Web Player</h4>
    <pre>createPlayer(){
-      fetch('http://' + this.state.ipAddress + '/api/vod/create',
-          {
-              method: 'POST',
-              headers: {
-                  'accept': 'application/json',
-                  'x-access-token': this.state.callabaToken,
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(
-                  {
-                  vod_name: "Test SRT player",
-                  input: {
-                      input_type: "INPUT_TYPE_SRT_SOFTWARE",
-                      input_server_id: this.state.serverId,
-                      input_stream_id: "publisher/test-srt-server/srt-stream-01"
-                  },
-                  vod_port: 10001,
-                  initial_live_manifest_size: 4,
-                  live_sync_duration_count: 4,
-                  hls_fragment_size: 3,
-                  hls_fragment_length: 60,
-                  dash_fragment_size: 3,
-                  dash_fragment_length: 60,
-                  active: true
-              })
-          })
-          .then(response => response.json())
-          .then(data => this.setState({playerId: data._id, playerState: "running"}))
-   }</pre>
+        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/create',
+            {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'x-access-token': this.state.callabaToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(
+                    {
+                        active: true,
+                        dash_fragment_length: 60,
+                        dash_fragment_size: 3,
+                        hls_fragment_length: 60,
+                        hls_fragment_size: 3,
+                        initial_live_manifest_size: 3,
+                        input: {
+                            input_module_id: this.state.serverId,
+                            input_stream_id: "",
+                            input_type: "INPUT_TYPE_SRT_SOFTWARE"
+                        },
+                        live_sync_duration_count: 3,
+                        transcoding: {
+                            audio_transcoding: "Disabled",
+                            output_audio_bitrate: 320,
+                            output_video_bitrate: 8000,
+                            video_transcoding: "Disabled"
+                        },
+                        vod_name: "Test SRT player",
+                        vod_port: 10001
+                    })
+            })
+            .then(response => response.json())
+            .then(data => this.setState({playerId: data._id, playerState: "running"}))
+    }</pre>
    It uses the server id to specify the server it gets the stream from.<br>
    After receiving data as a response the function saves the player's id to state. It is used by app to generate a link to the created player:
    <pre>http:// + instanceIpAdress + /vod-player/ + playerId</pre>
