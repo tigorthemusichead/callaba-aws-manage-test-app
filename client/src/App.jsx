@@ -33,7 +33,8 @@ class App extends React.Component{
             playerId: "no player id",
             playerState: "no player",
             youtubeKey: "",
-            restreamId: "no restream"
+            restreamId: "no restream",
+            instanceIp: ""
         };
     }
     //functions to communicate with express server
@@ -60,12 +61,13 @@ class App extends React.Component{
                 this.state.instanceData.Reservations.forEach((Reservation, index) => {
                     if(Reservation.Instances[0].InstanceId === this.state.instanceId)
                         this.setState({instanceIndex: index});
+                    this.setState({instanceIp: this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress})
                 })})
     }
     // Functions to communicate with Callaba API
     // Getting access token
     authenticate(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/auth/login',
+        fetch('http://' + this.state.instanceIp + '/api/auth/login',
             {
                 method: 'POST',
                 headers: {
@@ -85,7 +87,7 @@ class App extends React.Component{
     }
     // Creating a new SRT server
     createStream(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/srt-servers/create',
+        fetch('http://' + this.state.instanceIp + '/api/srt-servers/create',
             {
                 method: 'POST',
                 headers: {
@@ -111,7 +113,7 @@ class App extends React.Component{
     }
     // Stopping an SRT server
     stopStream(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/srt-servers/stop',
+        fetch('http://' + this.state.instanceIp + '/api/srt-servers/stop',
             {
                 method: 'POST',
                 headers: {
@@ -128,7 +130,7 @@ class App extends React.Component{
     }
     // Starting a stopped SRT server
     startStream(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/srt-servers/start',
+        fetch('http://' + this.state.instanceIp + '/api/srt-servers/start',
             {
                 method: 'POST',
                 headers: {
@@ -145,7 +147,7 @@ class App extends React.Component{
     }
     // Removing an SRT server
     removeStream(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/srt-servers/remove',
+        fetch('http://' + this.state.instanceIp + '/api/srt-servers/remove',
             {
                 method: 'DELETE',
                 headers: {
@@ -162,7 +164,7 @@ class App extends React.Component{
     }
     // Creating a new Web Player of your SRT stream
     createPlayer(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/create',
+        fetch('http://' + this.state.instanceIp + '/api/vod/create',
             {
                 method: 'POST',
                 headers: {
@@ -199,7 +201,7 @@ class App extends React.Component{
     }
     // Removing a Web player
     removePlayer(){
-        fetch('http://' + this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress + '/api/vod/remove',
+        fetch('http://' + this.state.instanceIp + '/api/vod/remove',
             {
                 method: 'DELETE',
                 headers: {
@@ -209,12 +211,13 @@ class App extends React.Component{
                 },
                 body: JSON.stringify({id: this.state.playerId})
             })
-            .then(response => response.json())
-            .then(() => this.setState({playerState: "no player"}))
+            .then(() => {
+                this.setState({playerState: "no player"})
+            })
     }
     // Creating a restream on YouTube
     createRestream(){
-        fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/create',
+        fetch('http://'+ this.state.instanceIp +'/api/restream/create',
             {
                 method: 'POST',
                 headers: {
@@ -235,7 +238,7 @@ class App extends React.Component{
                     output: {
                         output_type: "OUTPUT_TYPE_OTHER_RTMP_URL",
                         output_stream_url : "rtmp://x.rtmp.youtube.com/live2" ,
-                        output_stream_key: "f9da-dgj8-gq64-mjp2-7d0w"
+                        output_stream_key: this.state.youtubeKey
                     },
                     active: true
                 })
@@ -245,7 +248,7 @@ class App extends React.Component{
     }
     // Removing a restream on YouTube
     removeRestream(){
-        fetch('http://'+ this.state.instanceData.Reservations[this.state.instanceIndex].Instances[0].PublicIpAddress +'/api/restream/remove',
+        fetch('http://'+ this.state.instanceIp +'/api/restream/remove',
             {
                 method: 'DELETE',
                 headers: {
